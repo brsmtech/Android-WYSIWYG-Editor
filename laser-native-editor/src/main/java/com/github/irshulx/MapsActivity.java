@@ -23,7 +23,9 @@ import com.github.irshulx.R;
 
 import java.util.Random;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback{
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+    public final static String PLACE_COORDINATES = "place_coordinates";
+
     private GoogleMap mMap;
     private LatLng SelectedLatLng;
     @Override
@@ -46,11 +48,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
+
+
     private void insertMap() {
         if(SelectedLatLng!=null) {
             Intent returnIntent = new Intent();
-            String result= String.valueOf(SelectedLatLng.latitude)+","+String.valueOf(SelectedLatLng.longitude);
-            returnIntent.putExtra("cords",  result);
+            String result= String.valueOf(SelectedLatLng.latitude) + ","+String.valueOf(SelectedLatLng.longitude);
+            returnIntent.putExtra(PLACE_COORDINATES,  result);
             setResult(Activity.RESULT_OK, returnIntent);
             finish();
         }
@@ -94,7 +98,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
@@ -129,8 +132,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public  class MapHelper
     {
-
-
         public  Location getLocation(Location location, int radius) {
             Random random = new Random();
 

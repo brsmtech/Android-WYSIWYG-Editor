@@ -19,12 +19,12 @@ ext {
 
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion '27.0.3'
+    compileSdkVersion 28
+    buildToolsVersion '28.0.3'
 
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
     }
@@ -44,21 +44,23 @@ tasks.withType(Javadoc).all {
     options.addStringOption('charSet', 'UTF-8')
 }
 
-
-
-
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     testImplementation 'junit:junit:4.12'
-    implementation "com.android.support:support-v4:$supportLibVersion"
-    implementation "com.android.support:design:$supportLibVersion"
-    implementation "com.android.support:appcompat-v7:$supportLibVersion"
+    implementation supportLib.v4Support
+    implementation supportLib.design
+    implementation supportLib.appCompat
+
     implementation 'org.jsoup:jsoup:1.8.1'
-    implementation 'com.google.code.gson:gson:2.8.5'
-    implementation 'com.squareup.picasso:picasso:2.5.2'
-    implementation 'com.google.android.gms:play-services-maps:10.0.1'
-    implementation 'com.google.android.gms:play-services-location:10.0.1'
-    implementation 'com.google.android.gms:play-services-places:10.0.1'
+
+    implementation appLib.gson
+
+    implementation appLib.picasso
+
+    implementation playServicesLib.maps
+    implementation playServicesLib.location
+    implementation playServicesLib.places
+
     implementation 'org.jetbrains:annotations:13.0'
 }
 
