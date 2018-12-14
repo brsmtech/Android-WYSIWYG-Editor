@@ -87,15 +87,15 @@ public class MapExtensions extends EditorComponent {
 
     public String getMapStaticImgUri(String coords, int width){
         StringBuilder builder = new StringBuilder();
-        // builder.append("http://maps.google.com/maps/api/staticmap?");
-        // builder.append("size="+String.valueOf(width)+"x400&zoom=15&sensor=true&markers="+coords);
-
         builder.append("http://maps.google.com/maps/api/staticmap?");
         builder.append("size=" + width + "x" + 400);
         builder.append("&zoom=" + 15);
         builder.append("&sensor=true");
         builder.append("&markers=" + coords);
-        builder.append("&key=" + editorCore.getApikey());
+
+        if (editorCore.getApikey() != null) {
+            builder.append("&key=" + editorCore.getApikey());
+        }
 
         return builder.toString();
     }
@@ -106,8 +106,9 @@ public class MapExtensions extends EditorComponent {
         // String[] x= coords.split(",");
         // String lat = x[0];
         // String lng = x[1];
-        int[]size= Utilities.getScreenDimension(editorCore.getContext());
-        int width=size[0];
+
+        int[] size = Utilities.getScreenDimension(editorCore.getContext());
+        int width = size[0];
 
         String mapStaticUri = getMapStaticImgUri(coords, width);
 
