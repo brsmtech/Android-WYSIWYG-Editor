@@ -112,9 +112,11 @@ public class ImageExtensions extends EditorComponent {
         String path = node.content.get(0);
         if(editorCore.getRenderType() == RenderType.Renderer) {
             loadImage(path, node.childs.get(0));
-        }else{
-            View layout = insertImage(null,path,editorCore.getChildCount(),node.childs.get(0).content.get(0), false);
-            componentsWrapper. getInputExtensions().applyTextSettings(node.childs.get(0), (TextView) layout.findViewById(R.id.desc));
+        } else {
+            View layout = insertImage(null, path,editorCore.getChildCount(),
+                    node.childs.get(0).content.get(0), false);
+            componentsWrapper. getInputExtensions()
+                    .applyTextSettings(node.childs.get(0), (TextView) layout.findViewById(R.id.desc));
         }
     }
 
@@ -124,14 +126,16 @@ public class ImageExtensions extends EditorComponent {
         if (tag == HtmlTag.div) {
             String dataTag = element.attr("data-tag");
             if (dataTag.equals("img")) {
-                Element img = element.child(0);
-                Element descTag = (element.children().size() > 1) ? element.child(1) : null;
-                String src = img.attr("src");
-                loadImage(src, descTag);
+                if (!element.children().isEmpty()) {
+                    Element img = element.child(0);
+                    Element descTag = (element.children().size() > 1) ? element.child(1) : null;
+                    String src = img.attr("src");
+                    loadImage(src, descTag);
+                }
             }
         } else {
             String src = element.attr("src");
-            Element descTag = element.child(1);
+            Element descTag = (element.children().size() > 1) ? element.child(1) : null;
             loadImage(src, descTag);
         }
         return null;
@@ -330,7 +334,10 @@ public class ImageExtensions extends EditorComponent {
 
             Picasso.with(this.editorCore.getContext()).load(imagePath).into(imageView);
             editorCore.getParentView().addView(childLayout);
-            componentsWrapper.getInputExtensions().applyStyles(text, node);
+
+            if (node != null) {
+                componentsWrapper.getInputExtensions().applyStyles(text, node);
+            }
         } else {
             // TODO
         }
