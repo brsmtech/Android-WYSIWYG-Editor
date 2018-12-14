@@ -17,7 +17,7 @@ public class Utilities {
         display.getSize(size);
         int width = size.x;
         int height = size.y;
-        int[] dimen = {width, height};
+        int[] dimen = { width, height };
         return dimen;
     }
 
