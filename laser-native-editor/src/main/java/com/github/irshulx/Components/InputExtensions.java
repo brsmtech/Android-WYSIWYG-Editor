@@ -742,7 +742,8 @@ public class InputExtensions extends EditorComponent {
             editText.setTag(tag);
             editText.setTextColor(Color.parseColor(color));
         } catch (Exception ex) {
-            Log.e(editorCore.TAG, ex.getMessage());
+            // TODO
+            Log.e("", ex.getMessage());
         }
     }
 
