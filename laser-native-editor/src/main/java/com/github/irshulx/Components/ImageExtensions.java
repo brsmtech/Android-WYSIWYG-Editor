@@ -53,12 +53,14 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimerTask;
 import java.util.UUID;
 
 /**
  * Created by mkallingal on 5/1/2016.
  */
+
 public class ImageExtensions extends EditorComponent {
     private EditorCore editorCore;
     private int editorImageLayout = R.layout.tmpl_image_view;
@@ -88,11 +90,21 @@ public class ImageExtensions extends EditorComponent {
 
     @Override
     public String getContentAsHTML(Node node, EditorContent content) {
-        String subHtml = componentsWrapper.getInputExtensions().getInputHtml(node.childs.get(0));
-        String html = componentsWrapper.getHtmlExtensions().getTemplateHtml(node.type);
-        html = html.replace("{{$url}}", node.content.get(0));
-        html = html.replace("{{$img-sub}}", subHtml);
-        return html;
+        if ((node.childs != null) && !node.childs.isEmpty()) {
+            String subHtml = componentsWrapper.getInputExtensions().getInputHtml(node.childs.get(0));
+            String html = componentsWrapper.getHtmlExtensions().getTemplateHtml(node.type);
+
+            String url = node.content.get(0);
+            if (!(url.contains("http://") || url.contains("https://"))) {
+                url = editorCore.getBaseUrl() + url;
+            }
+
+            html = html.replace("{{$url}}", url);
+            html = html.replace("{{$img-sub}}", subHtml);
+
+            return html;
+        }
+        return null;
     }
 
     @Override
@@ -109,15 +121,15 @@ public class ImageExtensions extends EditorComponent {
     @Override
     public Node buildNodeFromHTML(Element element) {
         HtmlTag tag = HtmlTag.valueOf(element.tagName().toLowerCase());
-        if(tag == HtmlTag.div){
+        if (tag == HtmlTag.div) {
             String dataTag = element.attr("data-tag");
             if (dataTag.equals("img")) {
                 Element img = element.child(0);
-                Element descTag = element.child(1);
+                Element descTag = (element.children().size() > 1) ? element.child(1) : null;
                 String src = img.attr("src");
                 loadImage(src, descTag);
             }
-        }else {
+        } else {
             String src = element.attr("src");
             Element descTag = element.child(1);
             loadImage(src, descTag);
@@ -141,7 +153,7 @@ public class ImageExtensions extends EditorComponent {
 
     public void openImageGallery() {
         Intent intent = new Intent();
-// Show only images, no videos or anything else
+        // Show only images, no videos or anything else
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         // Always show the chooser (if there are multiple options available)
@@ -157,9 +169,9 @@ public class ImageExtensions extends EditorComponent {
         ImageView imageView =  childLayout.findViewById(R.id.imageView);
         final TextView lblStatus =  childLayout.findViewById(R.id.lblStatus);
         final CustomEditText desc = childLayout.findViewById(R.id.desc);
-        if(!TextUtils.isEmpty(url)){
+        if (!TextUtils.isEmpty(url)) {
             Picasso.with(editorCore.getContext()).load(url).into(imageView);
-        }else {
+        } else {
             imageView.setImageBitmap(image);
         }
         final String uuid = generateUUID();
@@ -169,12 +181,11 @@ public class ImageExtensions extends EditorComponent {
         showNextInputHint(index);
         editorCore.getParentView().addView(childLayout, index);
 
-        //      _Views.add(childLayout);
+        // _Views.add(childLayout);
 
         // set the imageId,so we can recognize later after upload
         childLayout.setTag(createImageTag(hasUploaded ? url : uuid));
         desc.setTag(createSubTitleTag());
-
 
         desc.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -188,18 +199,22 @@ public class ImageExtensions extends EditorComponent {
         });
 
         if (editorCore.isLastRow(childLayout) && appendTextline) {
-            componentsWrapper.getInputExtensions().insertEditText(index + 1, null, null);
+            componentsWrapper.getInputExtensions()
+                    .insertEditText(index + 1, null, null);
         }
-        if(!TextUtils.isEmpty(subTitle))
+
+        if (!TextUtils.isEmpty(subTitle)) {
             componentsWrapper.getInputExtensions().setText(desc, subTitle);
-        if(editorCore.getRenderType()== RenderType.Editor) {
-            BindEvents(childLayout);
-            if(!hasUploaded){
+        }
+
+        if (editorCore.getRenderType() == RenderType.Editor) {
+            bindEvents(childLayout);
+            if (!hasUploaded) {
                 lblStatus.setVisibility(View.VISIBLE);
                 childLayout.findViewById(R.id.progress).setVisibility(View.VISIBLE);
                 editorCore.getEditorListener().onUpload(image, uuid);
             }
-        }else {
+        } else {
             desc.setEnabled(false);
             lblStatus.setVisibility(View.GONE);
         }
@@ -235,14 +250,14 @@ public class ImageExtensions extends EditorComponent {
     }
 
     public String generateUUID() {
-        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
         String sdt = df.format(new Date(System.currentTimeMillis()));
         UUID x = UUID.randomUUID();
         String[] y = x.toString().split("-");
         return y[y.length - 1] + sdt;
     }
 
-    public EditorControl createSubTitleTag(){
+    public EditorControl createSubTitleTag() {
         EditorControl subTag = editorCore.createTag(EditorType.IMG_SUB);
         subTag.textSettings = new TextSettings("#5E5E5E");
         return subTag;
@@ -253,53 +268,73 @@ public class ImageExtensions extends EditorComponent {
         control.path = path;
         return control;
     }
+
     /*
       /used by the renderer to render the image from the Node
     */
-    public void loadImage(String _path, Node node) {
-        final View childLayout = ((Activity) editorCore.getContext()).getLayoutInflater().inflate(this.editorImageLayout, null);
-        ImageView imageView = childLayout.findViewById(R.id.imageView);
-        CustomEditText text = childLayout.findViewById(R.id.desc);
 
-        childLayout.setTag(createImageTag(_path));
-        text.setTag(createSubTitleTag());
+    public void loadImage(String imagePath, Node node) {
+        if ((imagePath != null) && !imagePath.isEmpty()) {
+            final View childLayout = ((Activity) editorCore.getContext())
+                    .getLayoutInflater().inflate(this.editorImageLayout, null);
+            ImageView imageView = childLayout.findViewById(R.id.imageView);
+            CustomEditText text = childLayout.findViewById(R.id.desc);
 
-        String desc = node.content.get(0);
+            childLayout.setTag(createImageTag(imagePath));
+            text.setTag(createSubTitleTag());
 
-        if (TextUtils.isEmpty(desc)) {
-            text.setVisibility(View.GONE);
+            String desc = node.content.get(0);
+
+            if (TextUtils.isEmpty(desc)) {
+                text.setVisibility(View.GONE);
+            } else {
+                componentsWrapper.getInputExtensions().setText(text, desc);
+                text.setEnabled(false);
+                componentsWrapper.getInputExtensions().applyTextSettings(node, text);
+            }
+
+            if (!(imagePath.contains("http://") || imagePath.contains("https://"))) {
+                imagePath = editorCore.getBaseUrl() + imagePath;
+            }
+
+            Picasso.with(this.editorCore.getContext()).load(imagePath).into(imageView);
+            editorCore.getParentView().addView(childLayout);
         } else {
-            componentsWrapper.getInputExtensions().setText(text, desc);
-            text.setEnabled(false);
-            componentsWrapper.getInputExtensions().applyTextSettings(node, text);
+            // TODO
         }
-        Picasso.with(this.editorCore.getContext()).load(_path).into(imageView);
-        editorCore.getParentView().addView(childLayout);
     }
 
-    public void loadImage(String _path, Element node) {
+    public void loadImage(String imagePath, Element node) {
+        if ((imagePath != null) && !imagePath.isEmpty()) {
+            final View childLayout = ((Activity) editorCore.getContext())
+                    .getLayoutInflater().inflate(this.editorImageLayout, null);
+            ImageView imageView = childLayout.findViewById(R.id.imageView);
+            CustomEditText text = childLayout.findViewById(R.id.desc);
 
-        final View childLayout = ((Activity) editorCore.getContext()).getLayoutInflater().inflate(this.editorImageLayout, null);
-        ImageView imageView = childLayout.findViewById(R.id.imageView);
-        CustomEditText text = childLayout.findViewById(R.id.desc);
+            childLayout.setTag(createImageTag(imagePath));
+            text.setTag(createSubTitleTag());
 
-        childLayout.setTag(createImageTag(_path));
-        text.setTag(createSubTitleTag());
+            String desc = (node != null) ? node.html() : "Description";
 
-        String desc = node.html();
+            if (TextUtils.isEmpty(desc)) {
+                text.setVisibility(View.GONE);
+            } else {
+                componentsWrapper.getInputExtensions().setText(text, desc);
+                text.setEnabled(false);
+                // editorCore.getInputExtensions().applyTextSettings(node, text);
+            }
 
-        if (TextUtils.isEmpty(desc)) {
-            text.setVisibility(View.GONE);
+            if (!(imagePath.contains("http://") || imagePath.contains("https://"))) {
+                imagePath = editorCore.getBaseUrl() + imagePath;
+            }
+
+            Picasso.with(this.editorCore.getContext()).load(imagePath).into(imageView);
+            editorCore.getParentView().addView(childLayout);
+            componentsWrapper.getInputExtensions().applyStyles(text, node);
         } else {
-            componentsWrapper.getInputExtensions().setText(text, desc);
-            text.setEnabled(false);
-           // editorCore.getInputExtensions().applyTextSettings(node, text);
+            // TODO
         }
-        Picasso.with(this.editorCore.getContext()).load(_path).into(imageView);
-        editorCore.getParentView().addView(childLayout);
-        componentsWrapper.getInputExtensions().applyStyles(text, node);
     }
-
 
     public View findImageById(String imageId) {
         for (int i = 0; i < editorCore.getParentChildCount(); i++) {
@@ -313,11 +348,11 @@ public class ImageExtensions extends EditorComponent {
 
     public void onPostUpload(String url, String imageId) {
         View view = findImageById(imageId);
-        final TextView lblStatus = (TextView) view.findViewById(R.id.lblStatus);
+        final TextView lblStatus = view.findViewById(R.id.lblStatus);
         lblStatus.setText(!TextUtils.isEmpty(url) ? "Upload complete" : "Upload failed");
         if (!TextUtils.isEmpty(url)) {
             EditorControl control = editorCore.createTag(EditorType.img);
-            control.path = url;
+            control.path = editorCore.getBaseUrl() + url;
             view.setTag(control);
             TimerTask timerTask = new TimerTask() {
                 @Override
@@ -336,13 +371,11 @@ public class ImageExtensions extends EditorComponent {
         view.findViewById(R.id.progress).setVisibility(View.GONE);
     }
 
+    private void bindEvents(final View layout) {
+        final ImageView imageView = layout.findViewById(R.id.imageView);
+        final View btnRemove = layout.findViewById(R.id.btn_remove);
 
-
-    private void BindEvents(final View layout) {
-        final ImageView imageView = (ImageView) layout.findViewById(R.id.imageView);
-        final View btn_remove = layout.findViewById(R.id.btn_remove);
-
-        btn_remove.setOnClickListener(new View.OnClickListener() {
+        btnRemove.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 int index = editorCore.getParentView().indexOfChild(layout);
@@ -361,9 +394,11 @@ public class ImageExtensions extends EditorComponent {
                     imageView.setColorFilter(Color.argb(50, 0, 0, 0));
                     rect = new Rect(v.getLeft(), v.getTop(), v.getRight(), v.getBottom());
                 }
+
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     imageView.setColorFilter(Color.argb(0, 0, 0, 0));
                 }
+
                 if (event.getAction() == MotionEvent.ACTION_MOVE) {
                     if (!rect.contains(v.getLeft() + (int) event.getX(), v.getTop() + (int) event.getY())) {
                         imageView.setColorFilter(Color.argb(0, 0, 0, 0));
@@ -372,16 +407,18 @@ public class ImageExtensions extends EditorComponent {
                 return false;
             }
         });
+
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                btn_remove.setVisibility(View.VISIBLE);
+                btnRemove.setVisibility(View.VISIBLE);
             }
         });
+
         imageView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                btn_remove.setVisibility(hasFocus ? View.VISIBLE : View.GONE);
+                btnRemove.setVisibility(hasFocus ? View.VISIBLE : View.GONE);
             }
         });
     }

@@ -39,8 +39,9 @@ import org.jsoup.nodes.Element;
 /**
  * Created by mkallingal on 5/1/2016.
  */
+
 public class MapExtensions extends EditorComponent {
-    EditorCore editorCore;
+    private EditorCore editorCore;
     private int mapExtensionTemplate=R.layout.tmpl_image_view;
 
     @Override
@@ -56,7 +57,7 @@ public class MapExtensions extends EditorComponent {
     @Override
     public String getContentAsHTML(Node node, EditorContent content) {
       return componentsWrapper.getHtmlExtensions().getTemplateHtml(node.type).replace("{{$content}}",
-              componentsWrapper.getMapExtensions().getCordsAsUri(node.content.get(0))).replace("{{$desc}}", node.content.get(1));
+              componentsWrapper.getMapExtensions().getCoordsAsUri(node.content.get(0))).replace("{{$desc}}", node.content.get(1));
     }
 
     @Override
@@ -74,7 +75,7 @@ public class MapExtensions extends EditorComponent {
         this.componentsWrapper = componentsWrapper;
     }
 
-    public MapExtensions(EditorCore editorCore){
+    public MapExtensions(EditorCore editorCore) {
         super(editorCore);
         this.editorCore = editorCore;
     }
@@ -84,41 +85,54 @@ public class MapExtensions extends EditorComponent {
         this.mapExtensionTemplate= drawable;
     }
 
-
-
-    public String getMapStaticImgUri(String cords, int width){
+    public String getMapStaticImgUri(String coords, int width){
         StringBuilder builder = new StringBuilder();
+        // builder.append("http://maps.google.com/maps/api/staticmap?");
+        // builder.append("size="+String.valueOf(width)+"x400&zoom=15&sensor=true&markers="+coords);
+
         builder.append("http://maps.google.com/maps/api/staticmap?");
-        builder.append("size="+String.valueOf(width)+"x400&zoom=15&sensor=true&markers="+cords);
+        builder.append("size=" + width + "x" + 400);
+        builder.append("&zoom=" + 15);
+        builder.append("&sensor=true");
+        builder.append("&markers=" + coords);
+        builder.append("&key=" + editorCore.getApikey());
+
         return builder.toString();
     }
 
-    public void insertMap(String cords, String desc, boolean insertEditText) {
-//        String image="http://maps.googleapis.com/maps/api/staticmap?center=43.137022,13.067162&zoom=16&size=600x400&maptype=roadmap&sensor=true&markers=color:blue|43.137022,13.067162";
-        String[] x= cords.split(",");
-        String lat = x[0];
-        String lng = x[1];
+    public void insertMap(String coords, String desc, boolean insertEditText) {
+        // String image="http://maps.googleapis.com/maps/api/staticmap?center=43.137022,13.067162
+        // &zoom=16&size=600x400&maptype=roadmap&sensor=true&markers=color:blue|43.137022,13.067162";
+        // String[] x= coords.split(",");
+        // String lat = x[0];
+        // String lng = x[1];
         int[]size= Utilities.getScreenDimension(editorCore.getContext());
         int width=size[0];
-//        ImageView imageView = new ImageView(context);
-//        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 400);
-//        params.bottomMargin=12;
-//        imageView.setLayoutParams(params);
-//        parentView.addView(imageView);
-//        Picasso.with(this.context).load(builder.toString()).into(imageView);
 
-        final View childLayout = ((Activity) this.editorCore.getContext()).getLayoutInflater().inflate(this.mapExtensionTemplate, null);
-        ImageView imageView = (ImageView) childLayout.findViewById(R.id.imageView);
-        Picasso.with(this.editorCore.getContext()).load(getMapStaticImgUri(String.valueOf(lat)+","+String.valueOf(lng),width)).into(imageView);
+        String mapStaticUri = getMapStaticImgUri(coords, width);
+
+        // ImageView imageView = new ImageView(context);
+        // LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+        //         LinearLayout.LayoutParams.MATCH_PARENT, 400);
+        // params.bottomMargin = 12;
+        // imageView.setLayoutParams(params);
+        // parentView.addView(imageView);
+        // Picasso.with(this.context).load(builder.toString()).into(imageView);
+
+        final View childLayout = ((Activity) this.editorCore.getContext())
+                .getLayoutInflater().inflate(this.mapExtensionTemplate, null);
+        ImageView imageView = childLayout.findViewById(R.id.imageView);
+        Picasso.with(this.editorCore.getContext()).load(mapStaticUri).into(imageView);
 
         /**
          * description, if render mode, set the description and disable it
          */
-        CustomEditText editText = (CustomEditText) childLayout.findViewById(R.id.desc);
+        CustomEditText editText = childLayout.findViewById(R.id.desc);
         if(editorCore.getRenderType()== RenderType.Renderer){
             editText.setText(desc);
             editText.setEnabled(false);
         }
+
         /*
          *  remove button
          */
@@ -130,34 +144,39 @@ public class MapExtensions extends EditorComponent {
                 btn.setVisibility(View.VISIBLE);
             }
         });
+
         imageView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 btn.setVisibility(hasFocus ? View.VISIBLE : View.INVISIBLE);
             }
         });
+
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 editorCore.getParentView().removeView(childLayout);
             }
         });
+
         EditorControl control = editorCore.createTag(EditorType.map);
-        control.Cords= cords;
+        control.Cords = coords;
         childLayout.setTag(control);
         int Index= editorCore.determineIndex(EditorType.map);
         editorCore.getParentView().addView(childLayout, Index);
-        if(insertEditText){
-          componentsWrapper.getInputExtensions().insertEditText(Index + 1, null, null);
+
+        if (insertEditText) {
+          componentsWrapper.getInputExtensions()
+                  .insertEditText(Index + 1, null, null);
         }
     }
 
-    public void loadMapActivity(){
-                Intent intent=new Intent(this.editorCore.getContext(), MapsActivity.class);
-                ((Activity) this.editorCore.getContext()).startActivityForResult(intent, editorCore.MAP_MARKER_REQUEST);
+    public void loadMapActivity() {
+        Intent intent = new Intent(this.editorCore.getContext(), MapsActivity.class);
+        ((Activity) this.editorCore.getContext()).startActivityForResult(intent, editorCore.MAP_MARKER_REQUEST);
     }
 
-    public CharSequence getCordsAsUri(String s) {
+    public CharSequence getCoordsAsUri(String s) {
         return getMapStaticImgUri(s,800);
     }
 }
