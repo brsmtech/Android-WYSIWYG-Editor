@@ -17,14 +17,13 @@ ext {
     allLicenses = ["Apache-2.0"]
 }
 
-
 android {
-    compileSdkVersion 28
-    buildToolsVersion '28.0.3'
+    compileSdkVersion compileSdk
+    buildToolsVersion buildTools
 
     defaultConfig {
-        minSdkVersion 15
-        targetSdkVersion 28
+        minSdkVersion minSdk
+        targetSdkVersion targetSdk
         versionCode 1
         versionName "1.0"
     }
@@ -47,14 +46,13 @@ tasks.withType(Javadoc).all {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     testImplementation 'junit:junit:4.12'
+
     implementation supportLib.v4Support
     implementation supportLib.design
     implementation supportLib.appCompat
 
-    implementation 'org.jsoup:jsoup:1.8.1'
-
+    implementation appLib.jsoup
     implementation appLib.gson
-
     implementation appLib.picasso
 
     implementation playServicesLib.maps
