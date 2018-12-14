@@ -55,10 +55,14 @@ import java.util.regex.Pattern;
  * Created by mkallingal on 4/30/2016.
  */
 public class EditorCore extends LinearLayout {
-    public static final String TAG = "EDITOR";
     private EditorListener listener;
+
     public final int MAP_MARKER_REQUEST = 20;
     public final int PICK_IMAGE_REQUEST = 1;
+
+    private String API_KEY = null;
+    private String BASE_URL = null;
+
     private InputExtensions inputExtensions;
     private ImageExtensions imageExtensions;
     private ListItemExtensions listItemExtensions;
@@ -69,13 +73,11 @@ public class EditorCore extends LinearLayout {
     private EditorSettings editorSettings;
     private ComponentsWrapper componentsWrapper;
 
-
     public EditorCore(Context _context, AttributeSet attrs) {
         super(_context, attrs);
         editorSettings = EditorSettings.init(_context, this);
         this.setOrientation(VERTICAL);
         initialize(attrs);
-
     }
 
     private void initialize(AttributeSet attrs) {
@@ -102,7 +104,6 @@ public class EditorCore extends LinearLayout {
         imageExtensions.init(componentsWrapper);
         listItemExtensions.init(componentsWrapper);
         mapExtensions.init(componentsWrapper);
-
     }
 
     //region Getters_and_Setters
@@ -211,6 +212,12 @@ public class EditorCore extends LinearLayout {
     protected MacroExtensions getMacroExtensions() {
         return macroExtensions;
     }
+
+    public void setApiKey(final String apiKey) { API_KEY = apiKey; }
+    public String getApikey() { return API_KEY; }
+
+    public void setBaseUrl(final String baseUrl) { BASE_URL = baseUrl; }
+    public String getBaseUrl() { return BASE_URL; }
 /*
  *
  *
@@ -392,7 +399,9 @@ public class EditorCore extends LinearLayout {
                     break;
                 case img:
                     String imgHtml = getImageExtensions().getContentAsHTML(item, content);
-                    htmlBlock.append(imgHtml);
+                    if (imgHtml != null) {
+                        htmlBlock.append(imgHtml);
+                    }
                     break;
                 case hr:
                     htmlBlock.append(dividerExtensions.getContentAsHTML(item, content));
