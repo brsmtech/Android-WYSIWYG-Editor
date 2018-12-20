@@ -1,4 +1,5 @@
 package com.github.irshulx;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -7,6 +8,7 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
+
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
@@ -28,12 +30,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     private LatLng SelectedLatLng;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-    //    Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //    Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -51,14 +54,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     private void insertMap() {
-        if(SelectedLatLng!=null) {
+        if (SelectedLatLng != null) {
             Intent returnIntent = new Intent();
-            String result= String.valueOf(SelectedLatLng.latitude) + ","+String.valueOf(SelectedLatLng.longitude);
-            returnIntent.putExtra(PLACE_COORDINATES,  result);
+            String result = String.valueOf(SelectedLatLng.latitude) + "," + String.valueOf(SelectedLatLng.longitude);
+            returnIntent.putExtra(PLACE_COORDINATES, result);
             setResult(Activity.RESULT_OK, returnIntent);
             finish();
         }
     }
+
     protected synchronized void buildGoogleApiClient() {
         PlaceAutocompleteFragment fragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
@@ -69,9 +73,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Context context = getApplicationContext();
                 CharSequence text = place.getName();
                 int duration = Toast.LENGTH_LONG;
-                Toast toast = Toast.makeText(context, "Location,"+text+" selected", duration);
+                Toast toast = Toast.makeText(context, "Location," + text + " selected", duration);
                 toast.show();
-               SelectedLatLng = place.getLatLng();
+                SelectedLatLng = place.getLatLng();
                 mMap.setTrafficEnabled(true);
 
                 CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -128,9 +132,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
     }
 
-    public  class MapHelper
-    {
-        public  Location getLocation(Location location, int radius) {
+    public class MapHelper {
+        public Location getLocation(Location location, int radius) {
             Random random = new Random();
 
             // Convert radius from meters to degrees
