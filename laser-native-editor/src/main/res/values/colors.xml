@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#005099</color>
-    <color name="colorPrimaryDark">#005099</color>
+    <color name="colorPrimary">#FF005099</color>
+    <color name="colorPrimaryDark">#FF005099</color>
     <color name="colorAccent">#AFBDC4</color>
-    <item name="blue" type="color">#2b6dad</item>
+    <item name="blue" type="color">#FF2B6DAD</item>
+    <item name="sky_blue" type="color">#FF87CEEB</item>
+    <item name="deep_sky_blue" type="color">#FF00BFFF</item>
+    <item name="sky_green" type="color">#FF87EBCE</item>
     <item name="purple" type="color">#FFAA66CC</item>
-    <item name="green" type="color">#99CC00</item>
+    <item name="green" type="color">#FF99CC00</item>
     <item name="orange" type="color">#FFFF8800</item>
     <item name="red" type="color">#FFFF4444</item>
-    <item name="darkblue" type="color">#005099 </item>
+    <item name="darkblue" type="color">#FF005099 </item>
     <item name="darkpurple" type="color">#FF9933CC</item>
-    <item name="darkgreen" type="color">#2DA44B</item>
+    <item name="darkgreen" type="color">#FF2DA44B</item>
     <item name="darkorange" type="color">#f3761c</item>
-    <item name="darkred" type="color">#B71C1C</item>
+    <item name="darkred" type="color">#FFB71C1C</item>
     <item name="darktext" type="color">#5E5E5E</item>
     <item name="darkertext" type="color">#333</item>
     <item name="lighttext" type="color">#999</item>
