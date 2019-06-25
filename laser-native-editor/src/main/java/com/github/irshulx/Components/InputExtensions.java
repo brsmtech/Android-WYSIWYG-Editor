@@ -32,7 +32,9 @@ import android.text.TextWatcher;
 import android.text.util.Linkify;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -80,7 +82,9 @@ public class InputExtensions extends EditorComponent {
     private int H3TEXTSIZE = 18;
     private int NORMALTEXTSIZE = 16;
     private int fontFace = R.string.fontFamily__serif;
-    EditorCore editorCore;
+
+    private EditorCore editorCore;
+
     private Map<Integer, String> contentTypeface;
     private Map<Integer, String> headingTypeface;
     private float lineSpacing = -1;
@@ -152,7 +156,6 @@ public class InputExtensions extends EditorComponent {
         this.headingTypeface = headingTypeface;
     }
 
-
     @Override
     public Node getContent(View view) {
         Node node = this.getNodeInstance(view);
@@ -217,11 +220,12 @@ public class InputExtensions extends EditorComponent {
         textView.setText(toReplace);
     }
 
-
     private TextView getNewTextView(CharSequence text) {
-        final TextView textView = new TextView(new ContextThemeWrapper(this.editorCore.getContext(), R.style.WysiwygEditText));
+        final TextView textView = new TextView(new ContextThemeWrapper(this.editorCore.getContext(),
+                R.style.WysiwygEditText));
         addEditableStyling(textView);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         params.setMargins(0, 0, 0, (int) editorCore.getContext().getResources().getDimension(R.dimen.edittext_margin_bottom));
         textView.setLayoutParams(params);
         if (!TextUtils.isEmpty(text)) {
@@ -243,15 +247,36 @@ public class InputExtensions extends EditorComponent {
     }
 
     public CustomEditText getNewEditTextInst(final String hint, CharSequence text) {
-        final CustomEditText editText = new CustomEditText(new ContextThemeWrapper(this.editorCore.getContext(), R.style.WysiwygEditText));
+
+        final CustomEditText editText =
+                new CustomEditText(new ContextThemeWrapper(this.editorCore.getContext(), R.style.WysiwygEditText));
         addEditableStyling(editText);
-        editText.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        editText.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+
         if (hint != null) {
             editText.setHint(hint);
         }
+
         if (text != null) {
             setText(editText, text);
         }
+
+        final GestureDetector gestureDetector = new GestureDetector(editText.getContext(),
+                new GestureDetector.SimpleOnGestureListener() {
+                    @Override
+                    public boolean onDown(MotionEvent event) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onDoubleTap(MotionEvent event) {
+                        //float x = e.getX();
+                        //float y = e.getY();
+                        editorCore.getEditorListener().onTextFocus(editText);
+                        return true;
+                    }
+                });
 
         /**
          * create tag for the editor
@@ -260,31 +285,43 @@ public class InputExtensions extends EditorComponent {
         EditorControl editorTag = editorCore.createTag(EditorType.INPUT);
         editorTag.textSettings = new TextSettings(this.DEFAULT_TEXT_COLOR);
         editText.setTag(editorTag);
-        editText.setBackgroundDrawable(ContextCompat.getDrawable(this.editorCore.getContext(), R.drawable.invisible_edit_text));
+        editText.setBackgroundDrawable(ContextCompat.getDrawable(this.editorCore.getContext(),
+                R.drawable.invisible_edit_text));
+
         editText.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 return editorCore.onKey(v, keyCode, event, editText);
             }
         });
+
         editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
-            public void onFocusChange(View v, boolean hasFocus) {
+            public void onFocusChange(View view, boolean hasFocus) {
                 if (!hasFocus) {
                     editText.clearFocus();
                 } else {
-                    editorCore.setActiveView(v);
+                    editorCore.setActiveView(view);
                 }
             }
         });
+
+        editText.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                return gestureDetector.onTouchEvent(motionEvent);
+            }
+        });
+
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // TODO
             }
 
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count,
-                                          int after) {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // TODO
             }
 
             @Override
