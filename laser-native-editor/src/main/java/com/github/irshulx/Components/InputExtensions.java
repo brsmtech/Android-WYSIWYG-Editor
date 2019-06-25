@@ -273,7 +273,7 @@ public class InputExtensions extends EditorComponent {
                     public boolean onDoubleTap(MotionEvent event) {
                         //float x = e.getX();
                         //float y = e.getY();
-                        editorCore.getEditorListener().onTextFocus(editText);
+                        editorCore.getEditorListener().onTextDoubleClick(editText);
                         return true;
                     }
                 });
